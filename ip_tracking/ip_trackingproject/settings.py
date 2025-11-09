@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ip_tracking.middleware.IPTrackingMiddleware',
     'ip_tracking.middleware.IPTrackingMiddlewareAsync',
+    'ip_tracking.middleware.RequestLoggingMiddleware'
 ]
 
 ROOT_URLCONF = 'ip_trackingproject.urls'
@@ -146,4 +147,11 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     }
+}
+
+# Geolocation configuration
+IPGEOLOCATION_SETTINGS = {
+    'backend': 'ipinfo',  # Use ipinfo.io as the geolocation provider
+    'api_key': 'your_ipinfo_api_key_here',  # Replace with your actual API key
+    'timeout': 5,  # Timeout for API requests in seconds
 }

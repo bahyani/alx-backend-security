@@ -8,6 +8,9 @@ Models for IP tracking and request logging.
 
 from django.db import models
 from django.utils import timezone
+from django.db import models
+
+
 
 
 class RequestLog(models.Model):
@@ -37,6 +40,16 @@ class RequestLog(models.Model):
         blank=True,
         null=True,
         help_text="User agent string from the request"
+    )
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
     )
 
     class Meta:

@@ -9,6 +9,59 @@ This middleware:
 from django.utils.deprecation import MiddlewareMixin
 from django.http import HttpResponseForbidden
 from .models import RequestLog, BlockedIP
+from django.core.cache import cache
+from django_ipgeolocation import IpGeolocation
+from ip_tracking.models import RequestLog
+
+class RequestLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.geolocation = IpGeolocation()
+
+    def __call__(self, request):
+        # Get client IP
+        ip_address = self.get_client_ip(request)
+
+        # Check cache for geolocation data
+        cache_key = f"geolocation_{ip_address}"
+        geo_data = cache.get(cache_key)
+
+        if not geo_data:
+            try:
+                # Fetch geolocation data
+                response = self.geolocation.query(ip=ip_address)
+                geo_data = {
+                    'country': response.get('country', ''),
+                    'city': response.get('city', '')
+                }
+                # Cache for 24 hours (24 * 60 * 60 seconds)
+                cache.set(cache_key, geo_data, timeout=24 * 60 * 60)
+            except Exception as e:
+                # Handle API errors gracefully
+                geo_data = {'country': None, 'city': None}
+                print(f"Geolocation error for IP {ip_address}: {e}")
+
+        # Log request
+        RequestLog.objects.create(
+            ip_address=ip_address,
+            path=request.path,
+            method=request.method,
+            country=geo_data['country'],
+            city=geo_data['city']
+        )
+
+        # Process the request
+        response = self.get_response(request)
+        return response
+
+    def get_client_ip(self, request):
+        # Handle cases with proxies
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
 
 class IPTrackingMiddleware(MiddlewareMixin):
