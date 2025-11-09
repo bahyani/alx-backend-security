@@ -131,6 +131,14 @@ RATELIMIT_CACHE_PREFIX = 'ratelimit_'
 RATELIMIT_USE_CACHE = 'default'  # Uses Django's default cache backend
 
 
+# Celery configuration
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
 
 CACHES = {
     'default': {

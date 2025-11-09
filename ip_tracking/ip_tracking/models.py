@@ -67,6 +67,14 @@ class RequestLog(models.Model):
     def __repr__(self):
         return f"<RequestLog: {self.ip_address} [{self.method}] {self.path}>"
 
+class SuspiciousIP(models.Model):
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.TextField()
+    flagged_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.reason}"
+
 
 class BlockedIP(models.Model):
     """
